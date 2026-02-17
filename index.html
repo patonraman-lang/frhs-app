@@ -5,7 +5,1339 @@
   <title>FRHS App</title>
 </head>
 <body>
-  <h1>FRHS App is live</h1>
-  <p>If you see this, deployment worked.</p>
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Future Readiness Health Scorecard (FRHS)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg0: #040d22;
+      --bg1: #071a3d;
+      --panel: rgba(10, 28, 60, 0.82);
+      --panel2: rgba(7, 19, 42, 0.94);
+      --line: rgba(124, 156, 214, 0.28);
+      --text: #eef4ff;
+      --muted: #9eb5df;
+      --cyan: #22c6ff;
+      --blue: #4b86e8;
+      --danger: #ff5f7a;
+      --warn: #ffb14a;
+      --ok: #33d4a2;
+      --radius: 18px;
+      --radius-lg: 24px;
+      --shadow: 0 30px 75px rgba(0, 0, 0, 0.42);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      font-family: "Poppins", "Segoe UI", sans-serif;
+      font-weight: 300;
+      color: var(--text);
+      background:
+        radial-gradient(1000px 700px at 8% 0%, rgba(51, 110, 210, 0.35), transparent 62%),
+        radial-gradient(850px 700px at 100% 100%, rgba(34, 198, 255, 0.24), transparent 60%),
+        linear-gradient(160deg, #020817 0%, #04112d 55%, #03102a 100%);
+      overflow-x: hidden;
+    }
+
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      inset: -12% -10%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    body::before {
+      background: repeating-linear-gradient(-17deg, rgba(211, 21, 162, 0.35) 0 2px, transparent 2px 28px);
+      mask-image: linear-gradient(132deg, transparent 18%, black 52%, transparent 88%);
+      opacity: 0.38;
+    }
+
+    body::after {
+      background: repeating-linear-gradient(-17deg, rgba(34, 198, 255, 0.35) 0 2px, transparent 2px 30px);
+      mask-image: linear-gradient(132deg, transparent 8%, black 55%, transparent 97%);
+      opacity: 0.35;
+      transform: translateY(10vh);
+    }
+
+    .app {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 18px 20px 34px;
+    }
+
+    .shell {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      overflow: hidden;
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid rgba(135, 165, 216, 0.2);
+      background: linear-gradient(180deg, rgba(8, 25, 54, 0.72), rgba(8, 25, 54, 0.18));
+    }
+
+    .logo {
+      width: 340px;
+      max-width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    .progress-wrap {
+      min-width: 265px;
+      display: grid;
+      gap: 8px;
+      justify-items: end;
+    }
+
+    .progress-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.76rem;
+      color: #bad0f3;
+      font-weight: 700;
+    }
+
+    .track {
+      width: 265px;
+      max-width: 100%;
+      height: 16px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(64, 96, 156, 0.56);
+      border: 1px solid rgba(122, 154, 208, 0.34);
+    }
+
+    .fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      transition: width 250ms ease;
+    }
+
+    .page {
+      padding: 20px 22px 22px;
+    }
+
+    .kicker {
+      margin: 0;
+      color: #9fc0f3;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    .btn {
+      height: 46px;
+      border-radius: 999px;
+      border: 0;
+      padding: 0 22px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      transition: transform 140ms ease, filter 140ms ease, opacity 140ms ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.06); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.48; cursor: not-allowed; transform: none; filter: none; }
+
+    .btn-primary {
+      color: #03203a;
+      background: linear-gradient(90deg, #5d8ef4, #20c8ff);
+    }
+
+    .btn-soft {
+      color: #e9f3ff;
+      background: linear-gradient(90deg, rgba(91, 126, 207, 0.88), rgba(72, 111, 193, 0.94));
+    }
+
+    .btn-outline {
+      color: #dfecff;
+      border: 1px solid rgba(130, 160, 214, 0.5);
+      background: rgba(18, 40, 79, 0.62);
+    }
+
+    .intro {
+      min-height: 620px;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .intro-card {
+      width: min(760px, 100%);
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(12, 34, 72, 0.82), rgba(9, 21, 45, 0.9));
+      padding: 28px;
+    }
+
+    .intro-title {
+      margin-top: 8px;
+      font-size: clamp(1.6rem, 3vw, 2.45rem);
+      line-height: 1.15;
+      font-weight: 700;
+    }
+
+    .intro-sub {
+      margin-top: 12px;
+      color: var(--muted);
+      line-height: 1.55;
+      max-width: 62ch;
+    }
+
+    .fields {
+      margin-top: 20px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 7px;
+      color: #cadbfa;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .field input, .field textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(121, 151, 206, 0.45);
+      background: rgba(4, 16, 34, 0.76);
+      color: var(--text);
+      font-family: inherit;
+      font-weight: 300;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .field input { height: 46px; }
+    .field textarea { min-height: 104px; resize: vertical; }
+
+    .field input:focus, .field textarea:focus {
+      border-color: rgba(34, 198, 255, 0.95);
+      box-shadow: 0 0 0 3px rgba(34, 198, 255, 0.18);
+    }
+
+    .intro .btn-primary { margin-top: 18px; }
+
+    .pillar-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .pillar-title {
+      margin-top: 7px;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      font-size: clamp(1.2rem, 2.2vw, 2rem);
+      font-weight: 700;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .questions {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(170px, 1fr));
+      gap: 12px;
+    }
+
+    .q-card {
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(136, 165, 218, 0.22);
+      background: rgba(9, 20, 43, 0.62);
+      transition: transform 160ms ease, border-color 160ms ease;
+    }
+
+    .q-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(56, 170, 247, 0.52);
+    }
+
+    .q-card.complete {
+      border-color: rgba(34, 198, 255, 0.68);
+    }
+
+    .q-top {
+      min-height: 250px;
+      padding: 16px 14px 14px;
+      background: linear-gradient(180deg, rgba(178, 23, 73, 0.94), rgba(151, 45, 106, 0.95) 72%, rgba(90, 98, 155, 0.92) 100%);
+      display: grid;
+      align-content: start;
+    }
+
+    .q-num {
+      text-align: center;
+      font-size: 2.75rem;
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .q-divider {
+      width: 58px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--cyan);
+      margin: 16px auto 14px;
+    }
+
+    .q-text {
+      text-align: center;
+      font-size: 0.95rem;
+      line-height: 1.35;
+      color: #f2f7ff;
+    }
+
+    .opts {
+      display: grid;
+      border-top: 1px solid rgba(150, 179, 229, 0.24);
+    }
+
+    .opt {
+      min-height: 56px;
+      border: 0;
+      border-top: 1px solid rgba(157, 183, 228, 0.2);
+      background: rgba(90, 88, 156, 0.72);
+      color: #edf4ff;
+      padding: 10px;
+      font-size: 0.93rem;
+      text-align: center;
+      font-family: inherit;
+      font-weight: 300;
+      cursor: pointer;
+      transition: background 140ms ease;
+    }
+
+    .opt:hover { background: rgba(107, 112, 198, 0.84); }
+
+    .opt:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px rgba(34, 198, 255, 0.95);
+      position: relative;
+      z-index: 1;
+    }
+
+    .opt.selected {
+      background: linear-gradient(90deg, rgba(74, 156, 229, 0.5), rgba(34, 198, 255, 0.54));
+      font-weight: 700;
+    }
+
+    .calc {
+      min-height: 520px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .calc-box {
+      width: min(560px, 100%);
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(12, 33, 69, 0.76), rgba(9, 21, 45, 0.9));
+      padding: 28px 24px;
+    }
+
+    .spinner {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      border: 4px solid rgba(102, 145, 219, 0.32);
+      border-top-color: var(--cyan);
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .calc-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .calc-sub {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .dashboard { display: grid; gap: 14px; }
+    .dash-top {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 12px;
+    }
+
+    .card {
+      border-radius: var(--radius);
+      border: 1px solid rgba(133, 161, 214, 0.25);
+      background: linear-gradient(180deg, rgba(12, 30, 60, 0.72), rgba(9, 20, 44, 0.84));
+      padding: 15px;
+    }
+
+    .overall {
+      margin-top: 6px;
+      font-size: clamp(3rem, 7vw, 6rem);
+      line-height: 1;
+      font-weight: 700;
+      background: linear-gradient(90deg, #95bbff, #35ccff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .score-message {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(130, 160, 214, 0.38);
+      background: rgba(8, 21, 45, 0.72);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .band-chip {
+      margin-top: 9px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 6px 11px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      border: 1px solid rgba(130, 160, 214, 0.45);
+    }
+
+    .dot { width: 9px; height: 9px; border-radius: 50%; }
+
+    .pillar-bars {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .line {
+      display: grid;
+      grid-template-columns: 200px 1fr 48px;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+
+    .mini-track {
+      height: 9px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .mini-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      transition: width 250ms ease;
+    }
+
+    .risk-guide {
+      margin-top: 12px;
+      font-size: 0.82rem;
+      color: #bdd1f1;
+      line-height: 1.45;
+      border-top: 1px dashed rgba(130, 160, 214, 0.33);
+      padding-top: 10px;
+    }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      height: 320px;
+      margin-top: 8px;
+    }
+
+    .gaps {
+      margin: 10px 0 0 18px;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+      line-height: 1.42;
+      font-size: 0.94rem;
+    }
+
+    .gaps small {
+      display: block;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .cta-row {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .scheduler {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 14px;
+    }
+
+    .slots {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+      max-height: 460px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .slot {
+      width: 100%;
+      text-align: left;
+      border: 1px solid rgba(136, 165, 218, 0.28);
+      border-radius: 14px;
+      background: rgba(10, 25, 52, 0.7);
+      color: var(--text);
+      padding: 12px;
+      cursor: pointer;
+      transition: border-color 140ms ease, background 140ms ease, transform 120ms ease;
+    }
+
+    .slot:hover {
+      transform: translateY(-1px);
+      border-color: rgba(34, 198, 255, 0.65);
+      background: rgba(12, 30, 63, 0.85);
+    }
+
+    .slot.active {
+      border-color: rgba(34, 198, 255, 0.95);
+      box-shadow: inset 0 0 0 1px rgba(34, 198, 255, 0.95);
+      background: linear-gradient(90deg, rgba(74, 156, 229, 0.38), rgba(34, 198, 255, 0.4));
+    }
+
+    .slot .day {
+      font-weight: 700;
+      font-size: 0.94rem;
+      margin-bottom: 3px;
+    }
+
+    .slot .time {
+      color: #c2d8fb;
+      font-size: 0.88rem;
+    }
+
+    .slot-note {
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .confirm {
+      margin-top: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(51, 212, 162, 0.5);
+      background: rgba(18, 67, 57, 0.35);
+      color: #dff9ef;
+      padding: 11px 12px;
+      line-height: 1.45;
+      display: none;
+    }
+
+    .confirm.show { display: block; }
+
+    @media (max-width: 1240px) {
+      .questions { grid-template-columns: repeat(3, minmax(170px, 1fr)); }
+      .line { grid-template-columns: 1fr; gap: 4px; }
+    }
+
+    @media (max-width: 980px) {
+      .scheduler { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 880px) {
+      .top { grid-template-columns: 1fr; }
+      .progress-wrap { justify-items: start; min-width: 0; }
+      .questions { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+      .dash-top, .chart-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      .app { padding: 10px 10px 20px; }
+      .top, .page { padding: 14px; }
+      .intro-card, .calc-box { padding: 18px; }
+      .questions { grid-template-columns: 1fr; }
+      .pillar-head { grid-template-columns: 1fr; }
+      .logo { width: 260px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="app"></main>
+
+  <script>
+    const LOGO_URL = "https://static.wixstatic.com/media/2fe6ea_f3b6d696a1e94e03bc501a77709ddd45~mv2.png";
+
+    const SCALE = [
+      { label: "Advanced / Embedded", value: 5 },
+      { label: "Fully in place", value: 4 },
+      { label: "Mostly in place", value: 3 },
+      { label: "Partially in place", value: 2 },
+      { label: "Not in place", value: 1 }
+    ];
+
+    const PILLARS = [
+      { name: "Future Design & Foresight", questions: [
+        "We have a structured process to identify future trends, risks, and opportunities.",
+        "Future trends and signals are reviewed on a defined and recurring basis.",
+        "We use future scenarios or outlooks to test strategic choices.",
+        "Future considerations are explicitly referenced in strategy or business plans.",
+        "Major initiatives consider long-term implications before approval.",
+        "Leadership regularly engages with future-focused insights."
+      ]},
+      { name: "Future Talents", questions: [
+        "We have identified roles and capabilities critical for the future.",
+        "We assess workforce readiness against future skill requirements.",
+        "Upskilling or reskilling initiatives address future capability gaps.",
+        "Talent attraction strategies consider emerging skills and roles.",
+        "Leadership and succession planning reflect future capability needs.",
+        "Talent planning is updated based on future trends."
+      ]},
+      { name: "Organisational Agility & Change", questions: [
+        "Decision-making roles are clear during periods of change.",
+        "The organisation can reprioritise initiatives quickly.",
+        "A consistent change management approach is applied.",
+        "Change initiatives are tracked for adoption and effectiveness.",
+        "Cross-functional collaboration can be mobilised quickly.",
+        "Lessons from past changes are captured and reused."
+      ]},
+      { name: "Technology & Data Utilisation", questions: [
+        "Key decisions are supported by reliable data and insights.",
+        "Data ownership and accountability are clearly defined.",
+        "Data is shared across functions for decision-making.",
+        "Advanced analytics or digital tools support planning.",
+        "Technology investments align with future needs.",
+        "Legacy systems do not constrain future capabilities."
+      ]},
+      { name: "Innovation for the Future", questions: [
+        "The organisation has a structured approach to innovation.",
+        "Innovation initiatives follow defined stages or criteria.",
+        "Resources are allocated for experimentation or pilots.",
+        "Learning from unsuccessful initiatives is encouraged.",
+        "Successful innovations are scaled or institutionalised.",
+        "Innovation priorities align with future strategic objectives."
+      ]}
+    ];
+
+    const state = {
+      step: 0, // 0 intro, 1..5 pillars, 6 calculating, 7 dashboard, 8 scheduler
+      profile: { name: "", organisation: "", role: "" },
+      answers: PILLARS.map(() => Array(6).fill(null)),
+      charts: { radar: null, bar: null },
+      calcTimer: null,
+      booking: {
+        slots: [],
+        selected: "",
+        email: "",
+        comments: "",
+        confirmed: false
+      }
+    };
+
+    const app = document.getElementById("app");
+
+    function escapeHtml(v) {
+      return String(v)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function answeredCount() {
+      return state.answers.flat().filter(v => typeof v === "number").length;
+    }
+
+    function progressPercent() {
+      return Math.round((answeredCount() / 30) * 100);
+    }
+
+    function pillarScore(i) {
+      const sum = state.answers[i].reduce((a, b) => a + (b || 0), 0);
+      return Math.round((sum / (6 * 5)) * 100);
+    }
+
+    function overallScore() {
+      return Math.round(PILLARS.reduce((acc, _, i) => acc + pillarScore(i), 0) / 5);
+    }
+
+    function band(score) {
+      if (score <= 39) return "Emerging";
+      if (score <= 59) return "Developing";
+      if (score <= 79) return "Established";
+      return "Leading";
+    }
+
+    function riskStatus(score) {
+      if (score <= 39) return { label: "High concern", color: "var(--danger)" };
+      if (score <= 59) return { label: "Moderate concern", color: "var(--warn)" };
+      if (score <= 79) return { label: "Watchlist concern", color: "var(--cyan)" };
+      return { label: "Low concern", color: "var(--ok)" };
+    }
+
+    function completePillar(i) {
+      return state.answers[i].every(v => typeof v === "number");
+    }
+
+    function topGaps(limit = 5) {
+      const list = [];
+      PILLARS.forEach((p, pi) => p.questions.forEach((q, qi) => {
+        list.push({ pillar: p.name, question: q, score: state.answers[pi][qi] || 0 });
+      }));
+      return list.sort((a, b) => a.score - b.score).slice(0, limit);
+    }
+
+    function destroyCharts() {
+      if (state.charts.radar) { state.charts.radar.destroy(); state.charts.radar = null; }
+      if (state.charts.bar) { state.charts.bar.destroy(); state.charts.bar = null; }
+    }
+
+    function clearCalcTimer() {
+      if (state.calcTimer) {
+        clearTimeout(state.calcTimer);
+        state.calcTimer = null;
+      }
+    }
+
+    function setStep(next) {
+      clearCalcTimer();
+      if (state.step === 7 && next !== 7) destroyCharts();
+      state.step = Math.max(0, Math.min(8, next));
+      render();
+
+      if (state.step === 6) {
+        state.calcTimer = setTimeout(() => {
+          state.step = 7;
+          render();
+        }, 1600);
+      }
+    }
+
+    function frame(content, progress) {
+      return `
+        <section class="shell">
+          <header class="top">
+            <img class="logo" src="${LOGO_URL}" alt="CoCreate Tomorrow logo" />
+            <div class="progress-wrap">
+              <div class="progress-label">${progress}% Complete</div>
+              <div class="track"><div class="fill" style="width:${progress}%"></div></div>
+            </div>
+          </header>
+          ${content}
+        </section>
+      `;
+    }
+
+    function renderIntro() {
+      const canStart = state.profile.name.trim() && state.profile.organisation.trim() && state.profile.role.trim();
+      const content = `
+        <section class="intro">
+          <div class="intro-card">
+            <p class="kicker">Future Readiness Health Scorecard</p>
+            <h1 class="intro-title">Assess organisational readiness for what comes next</h1>
+            <p class="intro-sub">Complete five pillars and receive a clear score profile, risk concern view, and top capability gaps.</p>
+            <div class="fields">
+              <div class="field">
+                <label for="name">Name</label>
+                <input id="name" type="text" autocomplete="name" value="${escapeHtml(state.profile.name)}" />
+              </div>
+              <div class="field">
+                <label for="organisation">Organisation</label>
+                <input id="organisation" type="text" autocomplete="organization" value="${escapeHtml(state.profile.organisation)}" />
+              </div>
+              <div class="field">
+                <label for="role">Role/Title</label>
+                <input id="role" type="text" value="${escapeHtml(state.profile.role)}" />
+              </div>
+            </div>
+            <button class="btn btn-primary" id="startBtn" ${canStart ? "" : "disabled"}>Start</button>
+          </div>
+        </section>`;
+      app.innerHTML = frame(content, 0);
+    }
+
+    function renderPillar(pIdx) {
+      const p = PILLARS[pIdx];
+      const content = `
+        <section class="page">
+          <div class="pillar-head">
+            <div>
+              <p class="kicker">Pillar ${pIdx + 1}</p>
+              <h2 class="pillar-title">${escapeHtml(p.name)}</h2>
+            </div>
+            <div class="nav">
+              <button class="btn btn-soft" data-action="back">Back</button>
+              <button class="btn btn-primary" data-action="next" ${completePillar(pIdx) ? "" : "disabled"}>Next</button>
+            </div>
+          </div>
+          <div class="questions">
+            ${p.questions.map((q, qIdx) => {
+              const val = state.answers[pIdx][qIdx];
+              return `
+              <article class="q-card ${val ? "complete" : ""}">
+                <div class="q-top">
+                  <div class="q-num">${qIdx + 1}</div>
+                  <div class="q-divider"></div>
+                  <div class="q-text">${escapeHtml(q)}</div>
+                </div>
+                <div class="opts" role="radiogroup" aria-label="Question ${qIdx + 1}">
+                  ${SCALE.map((s, si) => `
+                    <button class="opt ${val === s.value ? "selected" : ""}"
+                      type="button"
+                      data-action="select"
+                      data-pillar="${pIdx}"
+                      data-question="${qIdx}"
+                      data-value="${s.value}"
+                      data-opt-index="${si}"
+                      aria-pressed="${val === s.value ? "true" : "false"}">${s.label}</button>
+                  `).join("")}
+                </div>
+              </article>`;
+            }).join("")}
+          </div>
+        </section>`;
+      app.innerHTML = frame(content, progressPercent());
+    }
+
+    function renderCalculating() {
+      const content = `
+        <section class="calc">
+          <div class="calc-box">
+            <div class="spinner" aria-hidden="true"></div>
+            <h2 class="calc-title">Calculating your Future Readiness score...</h2>
+            <p class="calc-sub">We are aggregating pillar performance, identifying risk concern levels, and generating your dashboard insights.</p>
+          </div>
+        </section>`;
+      app.innerHTML = frame(content, 100);
+    }
+
+    function renderDashboard() {
+      const overall = overallScore();
+      const overallBand = band(overall);
+      const overallRisk = riskStatus(overall);
+      const pillars = PILLARS.map((p, i) => ({ name: p.name, score: pillarScore(i), risk: riskStatus(pillarScore(i)) }));
+      const gaps = topGaps(5);
+
+      const content = `
+        <section class="page dashboard">
+          <div class="dash-top">
+            <article class="card">
+              <p class="kicker">Overall Future Readiness</p>
+              <div class="overall">${overall}%</div>
+              <div class="band-chip"><span class="dot" style="background:${overallRisk.color}"></span>${overallBand} | ${overallRisk.label}</div>
+              <div class="score-message"><strong style="font-weight:700;">Key message:</strong> Your total score is in the <strong style="font-weight:700;">${overallBand}</strong> band. Priority focus should target areas marked with elevated risk concern in the pillar and chart views.</div>
+              <div class="pillar-bars">
+                ${pillars.map(x => `
+                  <div class="line">
+                    <span>${escapeHtml(x.name)}</span>
+                    <div class="mini-track"><div class="mini-fill" style="width:${x.score}%"></div></div>
+                    <strong style="font-weight:700;">${x.score}%</strong>
+                  </div>
+                `).join("")}
+              </div>
+              <div class="risk-guide">
+                <strong style="font-weight:700;">Risk concern guide:</strong>
+                0-39 High concern | 40-59 Moderate concern | 60-79 Watchlist concern | 80-100 Low concern
+              </div>
+            </article>
+
+            <article class="card">
+              <p class="kicker">Top Gaps</p>
+              <h3 style="margin-top:8px;font-weight:700;">Lowest Scoring 5 Questions</h3>
+              <ol class="gaps">
+                ${gaps.map(g => `
+                  <li>${escapeHtml(g.question)}<small>${escapeHtml(g.pillar)}</small></li>
+                `).join("")}
+              </ol>
+            </article>
+          </div>
+
+          <div class="chart-grid">
+            <article class="card">
+              <p class="kicker">Risk Profile by Pillar</p>
+              <h3 style="margin-top:8px;font-weight:700;">Radar Chart</h3>
+              <div class="chart-wrap"><canvas id="radarCanvas"></canvas></div>
+            </article>
+            <article class="card">
+              <p class="kicker">Score by Pillar</p>
+              <h3 style="margin-top:8px;font-weight:700;">Bar Chart</h3>
+              <div class="chart-wrap"><canvas id="barCanvas"></canvas></div>
+            </article>
+          </div>
+
+          <article class="card">
+            <p class="kicker">Next Step</p>
+            <h3 style="margin-top:8px;font-weight:700;">Action this with CoCreate Tomorrow</h3>
+            <div class="cta-row">
+              <button class="btn btn-primary" id="ctaBtn">Set up a call with the CoCreate Tomorrow team</button>
+              <button class="btn btn-outline" id="restartBtn">Restart</button>
+            </div>
+          </article>
+        </section>`;
+      app.innerHTML = frame(content, 100);
+      initCharts(pillars);
+    }
+
+    function formatSlot(startDate) {
+      const endDate = new Date(startDate.getTime() + 30 * 60000);
+      return {
+        id: `${startDate.getTime()}`,
+        start: startDate,
+        end: endDate,
+        dayText: startDate.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }),
+        timeText: `${startDate.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })} - ${endDate.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`
+      };
+    }
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateRandomSlots(count = 12) {
+      const slots = [];
+      const used = new Set();
+      const now = new Date();
+
+      while (slots.length < count) {
+        const dayOffset = randomInt(1, 14);
+        const hour = randomInt(9, 17);
+        const minute = Math.random() < 0.5 ? 0 : 30;
+        const dt = new Date(now);
+        dt.setDate(now.getDate() + dayOffset);
+        dt.setHours(hour, minute, 0, 0);
+
+        if (dt.getDay() === 0 || dt.getDay() === 6) continue;
+        if (dt <= now) continue;
+
+        const key = dt.getTime();
+        if (used.has(key)) continue;
+        used.add(key);
+        slots.push(formatSlot(dt));
+      }
+
+      slots.sort((a, b) => a.start - b.start);
+      return slots;
+    }
+
+    function prepareBookingState() {
+      state.booking.slots = generateRandomSlots(12);
+      state.booking.selected = "";
+      state.booking.email = "";
+      state.booking.confirmed = false;
+      state.booking.comments = `FRHS completed. Overall score: ${overallScore()}% (${band(overallScore())}). I would like to discuss the results and next steps.`;
+    }
+
+    function renderScheduler() {
+      const selected = state.booking.slots.find(s => s.id === state.booking.selected);
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.booking.email.trim());
+
+      const content = `
+        <section class="page">
+          <div class="scheduler">
+            <article class="card">
+              <p class="kicker">Schedule a 30-minute call</p>
+              <h2 style="margin-top:8px;font-weight:700;">Choose an upcoming time</h2>
+              <p style="margin-top:8px;color:var(--muted);line-height:1.5;">Select one of the available upcoming slots.</p>
+              <div class="slots" role="listbox" aria-label="Available 30 minute time slots">
+                ${state.booking.slots.map(slot => `
+                  <button class="slot ${slot.id === state.booking.selected ? "active" : ""}" type="button" data-action="slot" data-slot="${slot.id}">
+                    <div class="day">${slot.dayText}</div>
+                    <div class="time">${slot.timeText}</div>
+                  </button>
+                `).join("")}
+              </div>
+              <p class="slot-note">Times are shown in your local timezone.</p>
+            </article>
+
+            <article class="card">
+              <p class="kicker">Your details</p>
+              <h3 style="margin-top:8px;font-weight:700;">Confirm your request</h3>
+              <div class="fields" style="margin-top:14px;">
+                <div class="field">
+                  <label for="bookName">Name</label>
+                  <input id="bookName" type="text" value="${escapeHtml(state.profile.name)}" />
+                </div>
+                <div class="field">
+                  <label for="bookOrg">Organisation</label>
+                  <input id="bookOrg" type="text" value="${escapeHtml(state.profile.organisation)}" />
+                </div>
+                <div class="field">
+                  <label for="bookEmail">Email address</label>
+                  <input id="bookEmail" type="email" placeholder="name@company.com" value="${escapeHtml(state.booking.email)}" />
+                </div>
+                <div class="field">
+                  <label for="bookComments">Comments</label>
+                  <textarea id="bookComments">${escapeHtml(state.booking.comments)}</textarea>
+                </div>
+              </div>
+              <div class="score-message" style="margin-top:14px;">
+                <strong style="font-weight:700;">Selected slot:</strong>
+                ${selected ? `${selected.dayText}, ${selected.timeText}` : "Please select a time slot"}
+              </div>
+              <div class="cta-row">
+                <button class="btn btn-soft" data-action="back-dashboard">Back to results</button>
+                <button class="btn btn-primary" id="confirmBookingBtn" ${selected && emailOk ? "" : "disabled"}>Confirm call request</button>
+              </div>
+              <div class="confirm ${state.booking.confirmed ? "show" : ""}">
+                Your request has been prepared for <strong style="font-weight:700;">${selected ? `${selected.dayText}, ${selected.timeText}` : ""}</strong>. The CoCreate Tomorrow team can follow up at <strong style="font-weight:700;">${escapeHtml(state.booking.email)}</strong>.
+              </div>
+            </article>
+          </div>
+        </section>
+      `;
+      app.innerHTML = frame(content, 100);
+    }
+
+    function colorByScore(score) {
+      if (score <= 39) return "rgba(255,95,122,0.75)";
+      if (score <= 59) return "rgba(255,177,74,0.78)";
+      if (score <= 79) return "rgba(34,198,255,0.72)";
+      return "rgba(51,212,162,0.78)";
+    }
+
+    function colorByScoreBorder(score) {
+      if (score <= 39) return "rgba(255,95,122,1)";
+      if (score <= 59) return "rgba(255,177,74,1)";
+      if (score <= 79) return "rgba(34,198,255,1)";
+      return "rgba(51,212,162,1)";
+    }
+
+    const riskBandsPlugin = {
+      id: "riskBandsPlugin",
+      beforeDraw(chart) {
+        const { ctx, chartArea, scales } = chart;
+        if (!chartArea || !scales.x) return;
+
+        const bands = [
+          { from: 80, to: 100, color: "rgba(51,212,162,0.10)" },
+          { from: 60, to: 79, color: "rgba(34,198,255,0.09)" },
+          { from: 40, to: 59, color: "rgba(255,177,74,0.09)" },
+          { from: 0, to: 39, color: "rgba(255,95,122,0.09)" }
+        ];
+
+        ctx.save();
+        bands.forEach(b => {
+          const x1 = scales.x.getPixelForValue(b.from);
+          const x2 = scales.x.getPixelForValue(b.to);
+          ctx.fillStyle = b.color;
+          ctx.fillRect(x1, chartArea.top, x2 - x1, chartArea.bottom - chartArea.top);
+        });
+        ctx.restore();
+      }
+    };
+
+    function splitLabel(name) {
+      if (name.includes("&")) {
+        const parts = name.split("&");
+        return [parts[0].trim() + " &", parts.slice(1).join("&").trim()];
+      }
+      const words = name.split(" ");
+      if (words.length <= 2) return [name];
+      const cut = Math.ceil(words.length / 2);
+      return [words.slice(0, cut).join(" "), words.slice(cut).join(" ")];
+    }
+
+    function initCharts(pillars) {
+      destroyCharts();
+
+      const labels = pillars.map(p => splitLabel(p.name));
+      const values = pillars.map(p => p.score);
+      const bg = values.map(colorByScore);
+      const border = values.map(colorByScoreBorder);
+
+      const radarCtx = document.getElementById("radarCanvas").getContext("2d");
+      state.charts.radar = new Chart(radarCtx, {
+        type: "radar",
+        data: {
+          labels: pillars.map(p => p.name),
+          datasets: [{
+            data: values,
+            backgroundColor: "rgba(34,198,255,0.18)",
+            borderColor: "rgba(34,198,255,0.95)",
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: border,
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 420 },
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: c => `${c.raw}%` } }
+          },
+          scales: {
+            r: {
+              min: 0,
+              max: 100,
+              ticks: {
+                stepSize: 20,
+                backdropColor: "rgba(4,16,34,0.55)",
+                color: "#dbe8ff",
+                callback: (v) => {
+                  if (v === 40) return "40 (Emerging)";
+                  if (v === 60) return "60 (Developing)";
+                  if (v === 80) return "80 (Established)";
+                  return String(v);
+                }
+              },
+              grid: { color: "rgba(156,178,220,0.3)" },
+              angleLines: { color: "rgba(156,178,220,0.25)" },
+              pointLabels: { color: "#e4efff", font: { size: 11, weight: "700" } }
+            }
+          }
+        }
+      });
+
+      const barCtx = document.getElementById("barCanvas").getContext("2d");
+      state.charts.bar = new Chart(barCtx, {
+        type: "bar",
+        plugins: [riskBandsPlugin],
+        data: {
+          labels,
+          datasets: [{
+            label: "Pillar score",
+            data: values,
+            backgroundColor: bg,
+            borderColor: border,
+            borderWidth: 1.4,
+            borderRadius: 10,
+            barThickness: 26,
+            maxBarThickness: 32
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 420 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: (ctx) => pillars[ctx[0].dataIndex].name,
+                label: (ctx) => `${ctx.raw}%`
+              }
+            }
+          },
+          scales: {
+            x: {
+              min: 0,
+              max: 100,
+              ticks: { color: "#dce9ff", callback: v => `${v}%`, font: { weight: "700" } },
+              grid: { color: "rgba(156,178,220,0.24)" }
+            },
+            y: {
+              ticks: { color: "#e4efff", font: { size: 11, weight: "700" } },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    function render() {
+      if (state.step === 0) return renderIntro();
+      if (state.step >= 1 && state.step <= 5) return renderPillar(state.step - 1);
+      if (state.step === 6) return renderCalculating();
+      if (state.step === 7) return renderDashboard();
+      return renderScheduler();
+    }
+
+    app.addEventListener("input", (e) => {
+      if (state.step === 0) {
+        if (e.target.id === "name") state.profile.name = e.target.value;
+        if (e.target.id === "organisation") state.profile.organisation = e.target.value;
+        if (e.target.id === "role") state.profile.role = e.target.value;
+
+        const startBtn = document.getElementById("startBtn");
+        if (startBtn) {
+          startBtn.disabled = !(state.profile.name.trim() && state.profile.organisation.trim() && state.profile.role.trim());
+        }
+      }
+
+      if (state.step === 8) {
+        if (e.target.id === "bookName") state.profile.name = e.target.value;
+        if (e.target.id === "bookOrg") state.profile.organisation = e.target.value;
+        if (e.target.id === "bookEmail") state.booking.email = e.target.value;
+        if (e.target.id === "bookComments") state.booking.comments = e.target.value;
+
+        const selected = state.booking.selected;
+        const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.booking.email.trim());
+        const confirmBtn = document.getElementById("confirmBookingBtn");
+        if (confirmBtn) confirmBtn.disabled = !(selected && emailOk);
+      }
+    });
+
+    app.addEventListener("click", (e) => {
+      const actionEl = e.target.closest("[data-action]");
+      if (actionEl) {
+        const action = actionEl.dataset.action;
+
+        if (action === "select") {
+          const p = Number(actionEl.dataset.pillar);
+          const q = Number(actionEl.dataset.question);
+          const v = Number(actionEl.dataset.value);
+          state.answers[p][q] = v;
+          render();
+          return;
+        }
+
+        if (action === "back") {
+          setStep(state.step - 1);
+          return;
+        }
+
+        if (action === "next") {
+          const p = state.step - 1;
+          if (p >= 0 && p < 5 && !completePillar(p)) return;
+          if (state.step === 5) setStep(6);
+          else setStep(state.step + 1);
+          return;
+        }
+
+        if (action === "slot") {
+          state.booking.selected = actionEl.dataset.slot;
+          state.booking.confirmed = false;
+          renderScheduler();
+          return;
+        }
+
+        if (action === "back-dashboard") {
+          setStep(7);
+          return;
+        }
+      }
+
+      if (e.target.id === "startBtn") {
+        if (!state.profile.name.trim() || !state.profile.organisation.trim() || !state.profile.role.trim()) return;
+        setStep(1);
+      }
+
+      if (e.target.id === "restartBtn") {
+        clearCalcTimer();
+        destroyCharts();
+        state.answers = PILLARS.map(() => Array(6).fill(null));
+        state.step = 0;
+        state.booking = { slots: [], selected: "", email: "", comments: "", confirmed: false };
+        render();
+      }
+
+      if (e.target.id === "ctaBtn") {
+        prepareBookingState();
+        setStep(8);
+      }
+
+      if (e.target.id === "confirmBookingBtn") {
+        const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.booking.email.trim());
+        if (!state.booking.selected || !emailOk) return;
+        state.booking.confirmed = true;
+        const box = document.querySelector(".confirm");
+        if (box) box.classList.add("show");
+      }
+    });
+
+    app.addEventListener("keydown", (e) => {
+      const btn = e.target.closest(".opt");
+      if (!btn) return;
+      const key = e.key;
+      if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Enter", " "].includes(key)) return;
+
+      if (key === "Enter" || key === " ") {
+        e.preventDefault();
+        btn.click();
+        return;
+      }
+
+      e.preventDefault();
+      const p = Number(btn.dataset.pillar);
+      const q = Number(btn.dataset.question);
+      const i = Number(btn.dataset.optIndex);
+
+      if (key === "ArrowUp" || key === "ArrowDown") {
+        const opts = [...app.querySelectorAll(`.opt[data-pillar="${p}"][data-question="${q}"]`)];
+        const next = (i + (key === "ArrowDown" ? 1 : -1) + opts.length) % opts.length;
+        opts[next]?.focus();
+        return;
+      }
+
+      const nextQ = q + (key === "ArrowRight" ? 1 : -1);
+      if (nextQ < 0 || nextQ > 5) return;
+      const peer = app.querySelector(`.opt[data-pillar="${p}"][data-question="${nextQ}"][data-opt-index="${i}"]`);
+      if (peer) peer.focus();
+    });
+
+    let resizeTimer = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (state.charts.radar) state.charts.radar.resize();
+        if (state.charts.bar) state.charts.bar.resize();
+      }, 150);
+    });
+
+    render();
+  </script>
+</body>
+</html>
+```
 </body>
 </html>
