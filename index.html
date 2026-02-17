@@ -1030,7 +1030,7 @@
               </div>
               <div class="cta-row">
                 <button class="btn btn-soft" data-action="back-dashboard">Back to results</button>
-                <button class="btn btn-primary" id="confirmBookingBtn" ${selected && emailOk ? "" : "disabled"}>Confirm call request</button>
+                <button class="btn btn-primary" id="confirmBookingBtn" ${selected && emailOk ? "" : "disabled"}>Confirm call request </button>
               </div>
               <div class="confirm ${state.booking.confirmed ? "show" : ""}">
                 Your request has been prepared for <strong style="font-weight:700;">${selected ? `${selected.dayText}, ${selected.timeText}` : ""}</strong>. The CoCreate Tomorrow team can follow up at <strong style="font-weight:700;">${escapeHtml(state.booking.email)}</strong>.
